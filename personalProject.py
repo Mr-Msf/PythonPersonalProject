@@ -1,1 +1,1 @@
-print("lol nothing kekw")
+print("lol nothing")
