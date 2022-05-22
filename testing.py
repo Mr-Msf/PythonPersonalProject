@@ -1,21 +1,10 @@
-n_of_sides = int(input("How many sides does your shape have?\n"))
+n_of_sides = int(input("How many sides does your shape have: "))
+total_angles = (n_of_sides - 2) * 180
 running_total = 0
 
-for i in range(n_of_sides):
-    print(i)
-    running_total = running_total + int(input("Angle: "))
+for num in range(n_of_sides - 1):
+    running_total = running_total + int(input("Angle " + str(num + 1) + ": "))
 
-while True:
-    n_of_sides = 2
+angle_final = total_angles - running_total
 
-    if n_of_sides == 0:
-        break
-
-angle1 = int(input("\nAngle 1: "))
-angle2 = int(input("\nAngle 2: "))
-
-
-
-angle_final = running_total
-
-print("\nAngle 3: " + str(angle_final) + "\n")
+print("The final angle in your shape is " + str(angle_final) + " degrees.")
