@@ -6,7 +6,6 @@ HEIGHT = 600
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Hello World")
 
-
 def main():
     
     running = True
