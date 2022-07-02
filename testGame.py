@@ -25,8 +25,8 @@ def main():
         pygame.draw.polygon(WINDOW, (0,0,153), [(525,350), (775,350), (650, 225)])
         pygame.draw.rect(WINDOW, (102, 51, 0), (375, 450, 50, 100))
         pygame.draw.rect(WINDOW, (102, 51, 0), (125, 450, 50, 100))
-        pygame.draw.rect(WINDOW, (102, 51, 0), (625, 450, 50, 100))    
-
+        pygame.draw.rect(WINDOW, (102, 51, 0), (625, 450, 50, 100))   
+        
         pygame.display.update()
 
     pygame.quit()
