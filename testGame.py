@@ -1,3 +1,5 @@
+# This test program draws houses using pygame
+
 import pygame
 
 WIDTH = 800
