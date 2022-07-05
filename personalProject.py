@@ -3,6 +3,9 @@ import os
 
 FPS = 20
 MAP_DIM_MULT = 28
+HUD_PERCENTAGE = 0.2
+
+BLACK = (0,0,0)
 
 clock = pygame.time.Clock()
 
@@ -10,6 +13,8 @@ WINDOW = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
 WIDTH, HEIGHT = WINDOW.get_size()
 WIDTH_HALF, HEIGHT_HALF = int(WIDTH/2), int(HEIGHT/2)
+
+HUD_HEIGHT = int(HEIGHT*HUD_PERCENTAGE)
 
 def get_dimensions(asset):
     return(asset.get_width(), asset.get_height())
@@ -58,9 +63,11 @@ def run_game():
             map_offset_x += 15
         
         map_coords = (MAP_CENTER_COORDS[0]+map_offset_x, MAP_CENTER_COORDS[1]+map_offset_y)
-        WINDOW.fill((0,0,0))
+        WINDOW.fill(BLACK)
         WINDOW.blit(MAP, map_coords)
         WINDOW.blit(IMAGE, get_centered_coords(IMAGE))
+
+        # pygame.draw.rect(WINDOW, BLACK, (0,HEIGHT-HUD_HEIGHT,WIDTH,HUD_HEIGHT))
 
         pygame.display.update()
 
