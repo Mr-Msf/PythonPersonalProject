@@ -1,11 +1,18 @@
 import pygame
-import os
+import assetList, loadAssets, alterAsset
 
 FPS = 20
 MAP_DIM_MULT = 28
 HUD_PERCENTAGE = 0.2
+MOVE_SPEED = 15
 
 BLACK = (0,0,0)
+
+current_direction = 0
+
+ASSET_INFO = assetList.retrieve_info()
+ASSET_NAMES = assetList.retrieve_names()
+ORIG_ASSETS = loadAssets.load_assets(ASSET_INFO)
 
 clock = pygame.time.Clock()
 
@@ -16,70 +23,103 @@ WIDTH_HALF, HEIGHT_HALF = int(WIDTH/2), int(HEIGHT/2)
 
 HUD_HEIGHT = int(HEIGHT*HUD_PERCENTAGE)
 
-def get_dimensions(asset):
-    return(asset.get_width(), asset.get_height())
-
 def get_centered_coords(asset):
-    asset_width_half = int(get_dimensions(asset)[0]/2)
-    asset_height_half = int(get_dimensions(asset)[1]/2)
+    asset_width_half = int(alterAsset.get_dimensions(asset)[0]/2)
+    asset_height_half = int(alterAsset.get_dimensions(asset)[1]/2)
+
     return (WIDTH_HALF-asset_width_half, HEIGHT_HALF-asset_height_half)
 
-def get_filepath(asset_name, is_picture=True):
-    if is_picture:
-        return os.path.join("Assets", "Sprite-" + asset_name + ".png")
-    else:
+def move_map(assets, map_offset, keys_pressed):
+    direction = 0
+
+    if "UP" in keys_pressed:
+        map_offset[1] += MOVE_SPEED
+    if "DOWN" in keys_pressed:
+        direction = 180
+        map_offset[1] -= MOVE_SPEED
+    if "LEFT" in keys_pressed:
+        direction = 90
+        map_offset[0] += MOVE_SPEED
+    if "RIGHT" in keys_pressed:
+        direction = 270
+        map_offset[0] -= MOVE_SPEED
+
+    assets[1] = alterAsset.rotate_asset(ORIG_ASSETS[1], direction)
+
+    return assets, map_offset
+
+def blit_asset(asset, index, map_offset):
+    centered_coords = get_centered_coords(asset)
+    asset_offset = ASSET_INFO[ASSET_NAMES[index]][0]
+    coordinates = (centered_coords[0]+map_offset[0]+asset_offset[0], centered_coords[1]+map_offset[1]+asset_offset[1])
+    WINDOW.blit(asset, coordinates)
+
+def display_all_assets(assets, map_offset):
+    WINDOW.fill(BLACK)
+    for index, asset in enumerate(assets):
+        blit_asset(asset, index, map_offset)
+    
+    # pygame.draw.rect(WINDOW, BLACK, (0,HEIGHT-HUD_HEIGHT,WIDTH,HUD_HEIGHT))
+
+print
+
+def check_keys():
+    key_info = pygame.key.get_pressed()
+    keys_pressed = []
+        
+    for event in pygame.event.get():
+        pass
+    
+    if key_info[pygame.K_ESCAPE]:
+        keys_pressed.append("ESC")
+    if key_info[pygame.K_UP]:
+        keys_pressed.append("UP")
+    if key_info[pygame.K_DOWN]:
+        keys_pressed.append("DOWN")
+    if key_info[pygame.K_LEFT]:
+        keys_pressed.append("LEFT")
+    if key_info[pygame.K_RIGHT]:
+        keys_pressed.append("RIGHT")
+
+    return keys_pressed
+
+def get_hixbox(asset):
+    dimensions = alterAsset.get_dimensions(asset[0])
+    hitbox = pygame.Rect(asset[1], dimensions)
+    return hitbox
+
+
+def function():
+    for rect in hitbox_list:
         pass
 
-def prepare_file(asset_name, scale_factor=0, rotation_factor=0):
-    asset = pygame.image.load(get_filepath(asset_name))
-    new_lengths = (get_dimensions(asset)[0]*scale_factor, get_dimensions(asset)[1]*scale_factor)
-    asset = pygame.transform.scale(asset, new_lengths)
-
-    return asset
 
 def run_game():
     running = True
-    map_offset_x, map_offset_y = 0, 0
+    
+    map_offset = [0, 0]
 
     while running:
-        
         clock.tick(FPS)
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
+        assets = ORIG_ASSETS.copy()
 
-        keys_pressed = pygame.key.get_pressed()
-        
-        if keys_pressed[pygame.K_ESCAPE]:
+        keys_pressed = check_keys()
+
+        assets, map_offset = move_map(assets, map_offset, keys_pressed)
+
+        display_all_assets(assets, map_offset)
+
+        if "ESC" in keys_pressed:
             running = False
-        if keys_pressed[pygame.K_UP]:
-            map_offset_y += 15
-        if keys_pressed[pygame.K_DOWN]:
-            map_offset_y -= 15
-        if keys_pressed[pygame.K_RIGHT]:
-            map_offset_x -= 15
-        if keys_pressed[pygame.K_LEFT]:
-            map_offset_x += 15
-        
-        map_coords = (MAP_CENTER_COORDS[0]+map_offset_x, MAP_CENTER_COORDS[1]+map_offset_y)
-        WINDOW.fill(BLACK)
-        WINDOW.blit(MAP, map_coords)
-        WINDOW.blit(IMAGE, get_centered_coords(IMAGE))
-
-        # pygame.draw.rect(WINDOW, BLACK, (0,HEIGHT-HUD_HEIGHT,WIDTH,HUD_HEIGHT))
 
         pygame.display.update()
 
 def main():
-    global MAP, IMAGE, MAP_CENTER_COORDS
-
-    MAP = prepare_file("Map(v0.1)", MAP_DIM_MULT)
-    IMAGE = prepare_file("0001", 10)
-    MAP_CENTER_COORDS = get_centered_coords(MAP)
-    
     pygame.display.set_caption("My Personal Project")
+    
     run_game()
+
     pygame.quit()
 
 main()
