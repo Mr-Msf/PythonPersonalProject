@@ -16,8 +16,15 @@ def prepare_file(asset_name, scale_factor=1, is_picture=True):
     else:
         pass
 
-def load_assets(asset_info):
-    assets = []
+def get_hitbox(asset, coordinates):
+    hitbox = pygame.Rect(coordinates, asset.get_size())
+    return hitbox
+
+def load_resources(asset_info):
+    assets, hitboxes = [], []
     for key in asset_info:
-        assets.append(prepare_file(key, asset_info[key][1]))
-    return assets
+        properties = asset_info[key]
+        asset = prepare_file(key, properties[1])
+        assets.append(asset)
+        hitboxes.append(get_hitbox(asset, properties[0]))
+    return assets, hitboxes
