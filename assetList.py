@@ -5,13 +5,13 @@ CHAR_LEN_HALF = int(CHAR_LEN/2)
 CHAR_HITBOX_PERCENT = 0.3
 CHAR_HITBOX_LEN = int(CHAR_LEN*CHAR_HITBOX_PERCENT)
 
-CHAR_SPEED = 15
+CHAR_SPEED = 10
 
 ASSET_INFO_DICT = {
     # asset_name : ((orig_coords), size_mult, is_immovable, is_)
     "Map(v0.1)" : ((0,0), 28, False), 
     "CharSword1" : ((0,1000), 5, True),
-    "Crosshair" : ((0,1000), 5, True),
+    "Crosshair" : ((0,0), 5, True),
     "Star" : ((0,1000), 5, True),
     "Door1" : ((2660-3584,0), 28, False)
 
