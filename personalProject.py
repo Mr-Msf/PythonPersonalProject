@@ -1,14 +1,18 @@
+from tkinter import N
 import pygame
 import time
 import assetList, loadAssets, alterAsset
 import random
 
-FPS = 20
+FPS = 30
 MAP_DIM_MULT = 28
 HUD_PERCENT = 0.2
 MOVE_SPEED = 15
 
 BLACK = (0,0,0)
+RED = (255,0,0)
+GREEN = (0,255,0)
+BLUE = (0,0,255)
 
 current_direction = 0
 
@@ -21,25 +25,18 @@ WIDTH_HALF, HEIGHT_HALF = int(WIDTH/2), int(HEIGHT/2)
 
 HUD_HEIGHT = int(HEIGHT*HUD_PERCENT)
 
-ASSET_INFO = assetList.retrieve_info()
-ASSET_NAMES = assetList.retrieve_names()
+ASSET_INFO = assetList.retrieve_asset_info()
+ASSET_NAMES = assetList.retrieve_asset_names()
 ORIG_ASSETS, ASSET_HITBOXES = loadAssets.load_resources(ASSET_INFO)
 KEY_COMBOS = assetList.retrieve_key_combos()
-CHAR_HITBOXES = assetList.retrieve_char_hitboxes(WIDTH_HALF, HEIGHT_HALF)
+DIRECTION_HITBOXES, DETECTION_HITBOX, STARTING_WALL_HITBOXES = assetList.retrieve_hitboxes(WIDTH_HALF, HEIGHT_HALF)
 
+WALL_HITBOXES = STARTING_WALL_HITBOXES
 
-RAND_LIST = []
-RAND_HITBOXES = []
-WALL_HITBOXES = []
-
-for count in range(100):
-    RAND_LIST.append(random.randint(-3000,3000))
-    RAND_HITBOXES.append(pygame.Rect(0,0,100,100))
-
-def get_centered_coords(object_width, object_height):
-    asset_width_half = int(object_width/2)
-    asset_height_half = int(object_height/2)
-    return (WIDTH_HALF-asset_width_half, HEIGHT_HALF-asset_height_half)
+def get_centered_coords(asset):
+    object_width_half = int(asset.get_width()/2)
+    object_height_half = int(asset.get_height()/2)
+    return (WIDTH_HALF-object_width_half, HEIGHT_HALF-object_height_half)
 
 def check_keys():
     for event in pygame.event.get():
@@ -48,7 +45,7 @@ def check_keys():
     keys_pressed = pygame.key.get_pressed()
     return keys_pressed
 
-def alter_offset(map_offset, char_direction, colliding_char_hitboxes, keys_pressed):
+def alter_map_offset(map_offset, char_direction, colliding_char_hitboxes, keys_pressed):
     for index, key_combo in enumerate(KEY_COMBOS):
         if index not in colliding_char_hitboxes:
             if keys_pressed[key_combo[0]] and keys_pressed[key_combo[1]]:
@@ -58,19 +55,19 @@ def alter_offset(map_offset, char_direction, colliding_char_hitboxes, keys_press
     
     return map_offset, char_direction
 
-def update_hitbox(asset, hitbox, index, map_offset):
-    centered_coords = get_centered_coords(asset.get_width(), asset.get_height())
+def update_asset_hitbox(asset, hitbox, asset_properties, map_offset):
+    centered_coords = get_centered_coords(asset)
+    # asset = modify_asset(asset, asset_properties)
     if hitbox.size != asset.get_size():
         hitbox.size = asset.get_size()
-    asset_offset = ASSET_INFO[ASSET_NAMES[index]][0]
-    if ASSET_INFO[ASSET_NAMES[index]][2]:
-        coordinates = (centered_coords[0] + asset_offset[0], centered_coords[1] + asset_offset[1])
+    if asset_properties[2]:
+        screen_offset = map_offset
     else:
-        coordinates = (centered_coords[0] + map_offset[0] + asset_offset[0], centered_coords[1] + map_offset[1] + asset_offset[1])
-    hitbox.topleft = coordinates
-    return hitbox
+        screen_offset = (0,0)
+    new_hitbox = move_hitbox(hitbox, screen_offset, centered_coords)
+    return asset, new_hitbox
 
-def update_asset(asset, index):
+def modify_asset(asset, index):
     ASSET_INFO[ASSET_NAMES[index]][3]
     
     return asset
@@ -78,32 +75,32 @@ def update_asset(asset, index):
 def blit_asset(asset, hitbox):
     WINDOW.blit(asset, hitbox.topleft)
 
-def move_all_assets(assets, hitboxes, map_offset):
+def move_hitbox(orig_hitbox, map_offset, additional_offset=(WIDTH_HALF, HEIGHT_HALF)):
+    new_hitbox = orig_hitbox.copy()
+    new_hitbox.topleft = (orig_hitbox.x + map_offset[0] + additional_offset[0], orig_hitbox.y + map_offset[1] + additional_offset[1])
+    return new_hitbox
+
+def draw_rect_list(rect_list, colour):
+    for rect in rect_list:
+        pygame.draw.rect(WINDOW, colour, rect)
+
+def update_all_resources(assets, map_offset):
     WINDOW.fill(BLACK)
-    e = []
-    for rect in WALL_HITBOXES:
-        e.append(rect.copy())
-    for index, asset in enumerate(assets):
-        # asset = update_asset(asset, index)
-        hitboxes[index] = update_hitbox(asset, hitboxes[index], index, map_offset)
-        for inde, hitbox in enumerate(RAND_HITBOXES):
-            hitbox.topleft = (RAND_LIST[inde] + map_offset[0], RAND_LIST[-inde] + map_offset[1])
-            pygame.draw.rect(WINDOW, (250,233,89), hitbox)
+    wall_hitboxes = []
+    for wall_hitbox in WALL_HITBOXES:
+        wall_hitbox = move_hitbox(wall_hitbox, map_offset)
+        wall_hitboxes.append(wall_hitbox)
 
-        blit_asset(asset, hitboxes[index])
+    for asset, asset_hitbox, index in zip(assets, ASSET_HITBOXES, range(len(assets))):
+        asset_properties = ASSET_INFO[ASSET_NAMES[index]]
+        asset, asset_hitbox = update_asset_hitbox(asset, asset_hitbox, asset_properties, map_offset)
+        blit_asset(asset, asset_hitbox)
 
-    for (hitbox, hitbo) in zip(e, WALL_HITBOXES):
-
-        hitbox.topleft = (hitbo.x + map_offset[0] + WIDTH_HALF, hitbo.y + map_offset[1] + HEIGHT_HALF)
-        pygame.draw.rect(WINDOW, (10,233,78), hitbox)
-
-    #for hitbox in CHAR_HITBOXES:
-       # pygame.draw.rect(WINDOW, (10,233,78), hitbox)
-    
+    draw_rect_list(wall_hitboxes, BLUE)
     
     # pygame.draw.rect(WINDOW, BLACK, (0,HEIGHT-HUD_HEIGHT,WIDTH,HUD_HEIGHT))
 
-    return e
+    return wall_hitboxes
 
 def check_collision(hitbox_list1, hitbox_list2):
     colliding_hitboxes = []
@@ -116,7 +113,6 @@ def check_collision(hitbox_list1, hitbox_list2):
 def rect_with_coords(coord_set1, coord_set2):
     coord_diff = (coord_set2[0]-coord_set1[0], coord_set2[1]-coord_set1[1])
     rect = pygame.Rect(coord_set1, coord_diff)
-    print("yes")
     return rect
 
 def get_wall_hitbox(map_offset, saved_coords, saved_time, keys_pressed):
@@ -135,7 +131,6 @@ def get_wall_hitbox(map_offset, saved_coords, saved_time, keys_pressed):
     return rect, saved_coords, saved_time
 
 def run_game():
-    hitboxes = ASSET_HITBOXES.copy()
     running = True
     map_offset = [0,0]
     char_direction = 0
@@ -144,6 +139,7 @@ def run_game():
     loop_repeat = 0 
     time_taken = []
     wall_hitboxes = []
+    wall_hitbox_info = []
 
     while running:
         time1 = time.time()
@@ -153,13 +149,13 @@ def run_game():
         assets = ORIG_ASSETS.copy()
         keys_pressed = check_keys()
 
-        colliding_char_hitboxes = check_collision(CHAR_HITBOXES, wall_hitboxes)
+        colliding_char_hitboxes = check_collision(DIRECTION_HITBOXES, wall_hitboxes)
 
-        map_offset, char_direction = alter_offset(map_offset, char_direction, colliding_char_hitboxes, keys_pressed)    
+        map_offset, char_direction = alter_map_offset(map_offset, char_direction, colliding_char_hitboxes, keys_pressed)    
 
         assets[1] = alterAsset.rotate_asset(ORIG_ASSETS[1], char_direction)
 
-        wall_hitboxes = move_all_assets(assets, hitboxes, map_offset)
+        wall_hitboxes = update_all_resources(assets, map_offset)
 
         if keys_pressed[pygame.K_ESCAPE]:
             running = False
@@ -174,7 +170,9 @@ def run_game():
         time2 = time.time()
         time_taken.append(time2 - time1)
 
-    print(WALL_HITBOXES)
+    for hitbox in WALL_HITBOXES:
+        wall_hitbox_info.append((hitbox.x, hitbox.y, hitbox.width, hitbox.height))
+    print(wall_hitbox_info)
     print(loop_repeat)
     print("\nSPF = " + str(round(sum(time_taken)/len(time_taken), 7)) + "\n")
 
