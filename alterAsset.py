@@ -16,3 +16,11 @@ def resize_asset(asset, scale_factor):
 def rotate_asset(asset, rotation_factor):
     asset = pygame.transform.rotate(asset, rotation_factor)
     return asset
+
+def filter_list_by_properties(orig_list, properties, property_number):
+    list_section = []
+    for index, item in enumerate(orig_list):
+        item_properties = properties[index]
+        if not item_properties[property_number]:
+            list_section.append(item)
+    return list_section
