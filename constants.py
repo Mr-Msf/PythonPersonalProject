@@ -1,21 +1,42 @@
 import pygame
 import alterAsset
 
+FPS = 60
+MAP_DIM_MULT = 28
+HUD_PERCENT = 0.2
+MOVE_SPEED = 15
+
 CHAR_LEN = 112
 CHAR_SPEED = 14
 CHAR_HITBOX_PERCENT = 0.3
 CHAR_LEN_HALF = int(CHAR_LEN/2)
 CHAR_HITBOX_LEN = int(CHAR_LEN*CHAR_HITBOX_PERCENT)
 
-FILE_INFO_DICT = {
-    # asset_name : ((orig_coords), size_mult, is_movable, is_permeable)
-    "Map(v0.1)" : (True, [(0,0)], 28, True, True), 
-    "CharSword1" : (True, [(0,1000)], 5, False, False),
-    "Star" : (True, [(0,1000)], 5, True, True),
-    "Door1" : (True, [(-924, 0), (924, 0)], 28, True, False),
-    "Crosshair" : (True, [(0,0)], 5, False, True)
+BLACK = (0,0,0)
+RED = (255,0,0)
+GREEN = (0,255,0)
+BLUE = (0,0,255)
 
-}
+WINDOW = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+
+WIDTH, HEIGHT = WINDOW.get_size()
+WIDTH_HALF, HEIGHT_HALF = int(WIDTH/2), int(HEIGHT/2)
+
+HUD_HEIGHT = int(HEIGHT*HUD_PERCENT)
+
+ASSET_INFO = [
+    # (asset_name, (orig_coords), size_mult, is_movable, is_permeable)
+    ("Map(v0.1)", [(0,0)], 28, True, True), 
+    ("CharSword1", [(0,0)], 5, False, True),
+    ("Star", [(0,1000)], 5, True, True),
+    ("Door1", [(-924, 0), (924, 0)], 28, True, False),
+    ("Crosshair", [(0,0)], 5, False, True)
+
+]
+
+SOUNDTRACK_INFO = [
+    ""
+]
 
 DIRECTION_HITBOX_COORDS = [
     (-CHAR_HITBOX_LEN,-CHAR_LEN_HALF,CHAR_HITBOX_LEN*2,CHAR_LEN_HALF),
@@ -102,7 +123,7 @@ WALL_HITBOX_COORDS = [
     (3136, 2464, 448, 1120), 
     (-3360, 3136, 3248, 448), 
     (112, 3136, 2576, 448), 
-    (112, -1344, 784, 448)
+    (112, -1344, 784, 448),
 ]
 
 KEY_COMBOS = {
@@ -116,23 +137,11 @@ KEY_COMBOS = {
     #(pygame.K_DOWN, pygame.K_RIGHT) : (225, 0, 0)
 }
 
-def retrieve_file_info():
-    return FILE_INFO_DICT
-
-def retrieve_file_names():
-    file_names_list = []
-    for key in FILE_INFO_DICT:
-        file_names_list.append(key)
-    return file_names_list
-
-def retrieve_key_combos():
-    return KEY_COMBOS
-
-def retrieve_hitboxes(screen_w_half, screen_h_half):
+def retrieve_hitboxes():
     direction_hitboxes, wall_hitboxes = [], []
-    detection_hitbox = alterAsset.centre_rect(pygame.Rect(DETECTION_HITBOX_COORDS), screen_w_half, screen_h_half)
+    detection_hitbox = alterAsset.center_rect(pygame.Rect(DETECTION_HITBOX_COORDS), WIDTH_HALF, HEIGHT_HALF)
     for hitbox in DIRECTION_HITBOX_COORDS:
-        direction_hitboxes.append(alterAsset.centre_rect(pygame.Rect(hitbox), screen_w_half, screen_h_half))
+        direction_hitboxes.append(alterAsset.center_rect(pygame.Rect(hitbox), WIDTH_HALF, HEIGHT_HALF))
     for hitbox in WALL_HITBOX_COORDS:
-        wall_hitboxes.append(pygame.Rect(hitbox))
+        wall_hitboxes.append(alterAsset.center_rect(pygame.Rect(hitbox), WIDTH_HALF, HEIGHT_HALF))
     return direction_hitboxes, detection_hitbox, wall_hitboxes
