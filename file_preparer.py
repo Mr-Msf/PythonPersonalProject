@@ -12,7 +12,7 @@ def get_filepath(file_name, is_picture=True):
 def prepare_file(file_name, is_picture=True):
     if is_picture:
         asset = pygame.image.load(get_filepath(file_name, is_picture))
-        return asset
+        return asset.copy()
     else:
         file = pygame.mixer.music.load(get_filepath(file_name, is_picture))
         return file
@@ -34,6 +34,6 @@ def load_assets(asset_info):
     assets = []
     all_asset_properties = get_asset_properties(asset_info)
     for item_properties in all_asset_properties:
-        asset = asset_creator.Asset(item_properties[0], item_properties[1], item_properties[2], item_properties[3:])
+        asset = asset_creator.Asset(*item_properties)
         assets.append(asset)
     return assets

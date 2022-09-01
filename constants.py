@@ -1,13 +1,13 @@
 import pygame
 import alterAsset
 
-FPS = 60
+FPS = 30
 MAP_DIM_MULT = 28
 HUD_PERCENT = 0.2
 MOVE_SPEED = 15
 
 CHAR_LEN = 112
-CHAR_SPEED = 14
+CHAR_SPEED = 28
 CHAR_HITBOX_PERCENT = 0.3
 CHAR_LEN_HALF = int(CHAR_LEN/2)
 CHAR_HITBOX_LEN = int(CHAR_LEN*CHAR_HITBOX_PERCENT)
@@ -25,12 +25,16 @@ WIDTH_HALF, HEIGHT_HALF = int(WIDTH/2), int(HEIGHT/2)
 HUD_HEIGHT = int(HEIGHT*HUD_PERCENT)
 
 ASSET_INFO = [
-    # (asset_name, (orig_coords), size_mult, is_movable, is_permeable)
-    ("Map(v0.1)", [(0,0)], 28, True, True), 
-    ("CharSword1", [(0,0)], 5, False, True),
-    ("Star", [(0,1000)], 5, True, True),
-    ("Door1", [(-924, 0), (924, 0)], 28, True, False),
-    ("Crosshair", [(0,0)], 5, False, True)
+    # (asset_name, (orig_coords), is_movable, is_permeable, is_collectable, init_size_mult, init_rotation)
+    ("Map(v0.1)", [(0,0)], [True, True, False], 28), 
+    ("CharSword1", [(0,0)], [True, True, False], 5),
+    ("Star", [(0,1000)], [True, True, True], 5),
+    ("Star", [(-2016, -1120),(3024, 2576),(0, 3108)], [True, True, True], 5),
+    ("Star", [(-0, -0)], [True, True, True], 5),
+    ("Door1", [(-924, 0), (924, 0)], [True, False, False], 28),
+    ("Door1", [(-100000, 0), (100000, 0)], [True, False, False], 28, 90),
+    ("Switch1", [(-1680, 1680)], [True, False, False], 7, 270),
+    ("Crosshair", [(0,0)], [False, True, False], 5)
 
 ]
 
@@ -126,6 +130,11 @@ WALL_HITBOX_COORDS = [
     (112, -1344, 784, 448),
 ]
 
+DOORS_PER_SWITCH = [
+    [0],
+    [1]
+]
+
 KEY_COMBOS = {
     (pygame.K_UP, pygame.K_UP) : (0, 0, CHAR_SPEED),
     (pygame.K_DOWN, pygame.K_DOWN) : (180, 0, -CHAR_SPEED),
@@ -144,4 +153,4 @@ def retrieve_hitboxes():
         direction_hitboxes.append(alterAsset.center_rect(pygame.Rect(hitbox), WIDTH_HALF, HEIGHT_HALF))
     for hitbox in WALL_HITBOX_COORDS:
         wall_hitboxes.append(alterAsset.center_rect(pygame.Rect(hitbox), WIDTH_HALF, HEIGHT_HALF))
-    return direction_hitboxes, detection_hitbox, wall_hitboxes
+    return [direction_hitboxes, detection_hitbox, wall_hitboxes]
