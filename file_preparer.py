@@ -1,6 +1,6 @@
 import pygame
 import os
-import asset_creator, alterAsset
+import constants, asset_creator, switch_creator
 pygame.mixer.init()
 
 def get_filepath(file_name, is_picture=True):
@@ -37,3 +37,18 @@ def load_assets(asset_info):
         asset = asset_creator.Asset(*item_properties)
         assets.append(asset)
     return assets
+
+def get_switches_and_doors(assets):
+    switch_assets, door_assets = [], []
+    switches, doors = [], []
+    for asset in enumerate(assets):
+        if "Switch" in asset.name:
+            switch_assets.append(asset)
+        elif "Door" in asset.name:
+            door_assets.append(asset)
+    for switch_asset, door_indices in zip(switch_assets, constants.DOORS_PER_SWITCH):
+        switches.append(switch_creator.Switch(switch_asset, door_indices))
+    for door_asset, door_state in zip(door_assets, constants.STARTING_DOOR_STATES):
+        doors.append(switch_creator.Door(door_asset, door_state))
+        
+    return switches, doors

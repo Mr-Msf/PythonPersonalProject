@@ -6,7 +6,7 @@ class Asset:
         self.name = asset_name
         self.orig_coords = orig_coords
         self.size_mult = init_size_mult
-        self.rotation = init_rotation
+        self.rotation = self.orig_rotation = init_rotation
         self.is_movable, self.is_permeable, self.is_collectable = other_properties
         self.orig_image = file_preparer.prepare_file(asset_name)
         self.image = self.orig_image.copy()
@@ -14,18 +14,7 @@ class Asset:
         self.hitbox = self.orig_hitbox.copy()
         self.detectable_hitbox = pygame.Rect(0,0,0,0)
         self.status_var = False
-        self.determine_type()
         self.update_image()
-        
-    def determine_type(self):
-        if "Switch" in self.name:
-            self.is_swich = True
-        else:
-            self.is_switch = False
-        if "Door" in self.name:
-            self.is_door = True
-        else:
-            self.is_door = False
     
     def resize(self, scale_factor):
         self.size_mult = scale_factor
