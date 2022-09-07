@@ -17,10 +17,6 @@ def prepare_file(file_name, is_picture=True):
         file = pygame.mixer.music.load(get_filepath(file_name, is_picture))
         return file
 
-def get_hitbox(asset, coordinates):
-    hitbox = pygame.Rect(coordinates, asset.get_size())
-    return hitbox
-
 def get_asset_properties(all_asset_info):
     all_asset_properties = []
     for item_properties in all_asset_info:
@@ -30,6 +26,11 @@ def get_asset_properties(all_asset_info):
             all_asset_properties.append(item_properties_list)
     return all_asset_properties
 
+def center_rect(rect, screen_w_half, screen_h_half):
+    rect.x += screen_w_half
+    rect.y += screen_h_half
+    return rect
+
 def load_assets(asset_info):
     assets = []
     all_asset_properties = get_asset_properties(asset_info)
@@ -38,10 +39,18 @@ def load_assets(asset_info):
         assets.append(asset)
     return assets
 
+def get_hitboxes(all_hitbox_info):
+    hitboxes = []
+    for hitbox_info in all_hitbox_info:
+        hitbox_info[0] = center_rect(pygame.Rect(hitbox_info[0]), constants.WIDTH_HALF, constants.HEIGHT_HALF)
+        hitbox = asset_creator.Hitbox(*hitbox_info)
+        hitboxes.append(hitbox)
+    return hitboxes
+
 def get_switches_and_doors(assets):
     switch_assets, door_assets = [], []
     switches, doors = [], []
-    for asset in enumerate(assets):
+    for asset in assets:
         if "Switch" in asset.name:
             switch_assets.append(asset)
         elif "Door" in asset.name:

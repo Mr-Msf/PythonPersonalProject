@@ -1,13 +1,14 @@
 import pygame
 import time
-import constants, file_preparer, asset_creator, alterAsset
-import random
+import constants, file_preparer, other_functions
+
+pygame.font.init()
 
 WINDOW = constants.WINDOW
 
 assets = file_preparer.load_assets(constants.ASSET_INFO)
+other_hitboxes = file_preparer.get_hitboxes(constants.ALL_HITBOX_COORDS)
 #SOUNDTRACKS = file_preparer.e(constants.SOUNDTRACK_INFO)
-other_hitboxes = constants.retrieve_hitboxes()
 
 def check_keys():
     for event in pygame.event.get():
@@ -15,10 +16,6 @@ def check_keys():
 
     keys_pressed = pygame.key.get_pressed()
     return keys_pressed
-
-def draw_rect_list(rect_list, colour):
-    for rect in rect_list:
-        pygame.draw.rect(WINDOW, colour, rect)
 
 def rect_with_coords(coord_set1, coord_set2):
     coord_diff = (coord_set2[0]-coord_set1[0], coord_set2[1]-coord_set1[1])
@@ -35,14 +32,14 @@ def alter_map_offset(map_offset, char_direction, colliding_char_hitboxes, keys_p
     
     return map_offset, char_direction
 
-def modify_assets(assets, other_objects, detection_hitbox, keys_pressed, saved_time):
+def modify_assets(assets, other_objects, other_hitboxes, keys_pressed, saved_time):
     if saved_time + 0.5 < time.time():
-        saved_time = collect_items(assets, detection_hitbox, keys_pressed, saved_time)
+        saved_time = collect_items(assets, other_hitboxes[4].hitbox, keys_pressed, saved_time)
     
         #if keys_pressed[pygame.K_a]:
         #    assets[11].rotate(240)
 
-        handle_mechanisms(other_objects, detection_hitbox, keys_pressed)
+        handle_mechanisms(other_objects, other_hitboxes[4].hitbox, keys_pressed)
     return saved_time
 
 def check_list_collision(hitbox_list1, hitbox_list2):
@@ -74,11 +71,18 @@ def get_point_coords(map_offset, saved_time):
         return point_coords, saved_time
     return 0, saved_time
 
-def get_asset_hitboxes(assets):
-    asset_hitboxes = []
-    for asset in assets:
-        asset_hitboxes.append(asset.detectable_hitbox)
-    return asset_hitboxes
+def get_non_permeable_hitboxes(assets, hitboxes):
+    non_permeable_hitboxes = []
+    for object in assets + hitboxes:
+        if not object.is_permeable:
+            non_permeable_hitboxes.append(object.hitbox)
+    return non_permeable_hitboxes
+
+def get_hitboxes_from_list(object_list):
+    hitboxes = []
+    for object in object_list:
+        hitboxes.append(object.hitbox)
+    return hitboxes
 
 def collect_items(assets, detection_hitbox, keys_pressed, saved_time):
     for asset in assets:
@@ -96,42 +100,56 @@ def handle_mechanisms(other_objects, detection_hitbox, keys_pressed):
     for door in other_objects[1]:
         door.update()
 
-def get_touching_asset_index(assets, detection_hitbox):
-    for index, asset in enumerate(assets):
-        if asset.check_collision(detection_hitbox):
-            if "Door" in asset.name:
-                return index
-            elif "Switch" in asset.name:
-                return index
+def get_touching_asset_index(other_objects, detection_hitbox):
+    for index, switch in enumerate(other_objects[0]):
+        if switch.asset.check_collision(detection_hitbox):
+            return index
+    for index, door in enumerate(other_objects[1]):
+        if door.asset.check_collision(detection_hitbox):
+            return index
     return "lol"
 
-def update_all_positions(assets, hitboxes, map_offset, keys_pressed):
+def take_damage(hitboxes, char_health):
+    for hitbox in hitboxes:
+        if hitbox.check_collision(hitboxes[5].hitbox):
+            char_health -= hitbox.dmg_amount
+    if char_health > 500:
+        char_health = 500
+    return char_health
+
+def handle_health_system(assets, other_hitboxes, char_health):
+    char_health = take_damage(other_hitboxes, char_health)
+    hearts = char_health//5
+    for count in range(hearts):
+        heart_spacing = count * 100
+        WINDOW.blit(assets[-2].image, (constants.WIDTH - heart_spacing, constants.HEIGHT - 100))
+    return char_health
+
+def update_all_positions(assets, other_hitboxes, map_offset):
     WINDOW.fill(constants.BLACK)
-    new_wall_hitboxes = []
-    for wall_hitbox in hitboxes[2]:
-        new_wall_hitbox = alterAsset.move_hitbox(wall_hitbox, map_offset)
-        new_wall_hitboxes.append(new_wall_hitbox)
+    for object in assets + other_hitboxes:
+        object.update_position(map_offset)
 
     for asset in assets:
-        asset.update_position(map_offset)
         asset.blit(WINDOW)
 
-    draw_rect_list([hitboxes[1]], constants.RED)
-    #draw_rect_list(DIRECTION_HITBOXES, constants.GREEN)
-    #draw_rect_list(new_wall_hitboxes, constants.BLUE)
+    for hitbox in other_hitboxes:
+        break
+        #other_functions.draw_rect_list(WINDOW, [all_hitboxes[1]], constants.RED)
+        #draw_rect_list(DIRECTION_HITBOXES, constants.GREEN)
+        pygame.draw.rect(WINDOW, constants.BLUE, hitbox.hitbox)
+    #pygame.draw.rect(WINDOW, constants.RED, other_hitboxes[5].hitbox)
+        
     
     # pygame.draw.rect(WINDOW, BLACK, (0,HEIGHT-HUD_HEIGHT,WIDTH,HUD_HEIGHT))
-
-    return new_wall_hitboxes
 
 def run_game(assets, other_hitboxes, clock):
     running = True
     map_offset = [0,0]
     char_direction = 0
+    char_health = 500
     saved_time = time.time()
     times_taken = []
-    direction_hitboxes, detection_hitbox, orig_wall_hitboxes = other_hitboxes
-    wall_hitboxes = orig_wall_hitboxes.copy()
     #wall_hitbox_info = []
     #saved_coords = 0
     object_coords = []
@@ -139,20 +157,28 @@ def run_game(assets, other_hitboxes, clock):
     asset_list_indices = []
     other_objects = file_preparer.get_switches_and_doors(assets)
     
+    #sans_font = pygame.font.SysFont("sans", 40)
+
     while running:
         time1 = time.time()
         clock.tick(constants.FPS)
 
         keys_pressed = check_keys()
-        asset_hitboxes = get_asset_hitboxes(assets)
-
-        colliding_char_hitboxes = []#check_list_collision(direction_hitboxes, (wall_hitboxes + asset_hitboxes))
+        non_permeable_hitboxes = get_non_permeable_hitboxes(assets, other_hitboxes)
+        
+        print(char_health)
+        #message = sans_font.render("LOL", 1, constants.BLACK)
+        #coords = other_functions.get_centered_coords(message, (constants.WIDTH_HALF, constants.HEIGHT_HALF))
+        
+        colliding_char_hitboxes = check_list_collision(get_hitboxes_from_list(other_hitboxes[:4]), non_permeable_hitboxes)
 
         map_offset, char_direction = alter_map_offset(map_offset, char_direction, colliding_char_hitboxes, keys_pressed)    
         
-        saved_time = modify_assets(assets, other_objects, detection_hitbox, keys_pressed, saved_time)
+        saved_time = modify_assets(assets, other_objects, other_hitboxes, keys_pressed, saved_time)
         
-        wall_hitboxes = update_all_positions(assets, other_hitboxes, map_offset, keys_pressed)
+        update_all_positions(assets, other_hitboxes, map_offset)
+
+        #WINDOW.blit(message, coords)
 
         if keys_pressed[pygame.K_SPACE]:
             point_coords, saved_time = get_point_coords(map_offset, saved_time)
@@ -160,9 +186,10 @@ def run_game(assets, other_hitboxes, clock):
                 object_coords.append(point_coords)
 
         if keys_pressed[pygame.K_i]:
-            touching_asset_index = get_touching_asset_index(assets, detection_hitbox)
-            if touching_asset_index != "lol":
+            touching_asset_index = get_touching_asset_index(other_objects, other_hitboxes[4].hitbox)
+            if touching_asset_index != "lol" and saved_time + 0.3 < time.time():
                 asset_list_indices.append(touching_asset_index)
+                saved_time = time.time()
 
         if keys_pressed[pygame.K_ESCAPE]:
             running = False
