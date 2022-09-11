@@ -49,15 +49,12 @@ class Asset:
         parent_surface.blit(self.image, self.hitbox)
 
 class Hitbox:
-    def __init__(self, orig_rect, is_movable=True, dmg_amount=0):
+    def __init__(self, orig_rect, is_movable=True, dmg_amount=0, is_permeable=False):
         self.orig_hitbox = orig_rect
         self.hitbox = self.orig_hitbox.copy()
         self.is_movable = is_movable
         self.dmg_amount = dmg_amount
-        if dmg_amount == 0:
-            self.is_permeable = False
-        else:
-            self.is_permeable = True
+        self.is_permeable = is_permeable
 
     def update_position(self, map_offset):
         if self.is_movable:
