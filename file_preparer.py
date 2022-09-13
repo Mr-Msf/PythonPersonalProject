@@ -59,6 +59,5 @@ def get_switches_and_doors(assets):
         switches.append(switch_creator.Switch(switch_asset, door_indices))
     for door_asset, door_state in zip(door_assets, constants.STARTING_DOOR_STATES):
         doors.append(switch_creator.Door(door_asset, door_state))
-    print(doors)
         
     return switches, doors
