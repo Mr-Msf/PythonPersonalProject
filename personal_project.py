@@ -185,7 +185,7 @@ def run_game(assets, other_hitboxes, clock):
         
         #message = sans_font.render("LOL", 1, constants.BLACK)
         #coords = other_functions.get_centered_coords(message, (constants.WIDTH_HALF, constants.HEIGHT_HALF))
-        if not keys_pressed[pygame.K_1]:
+        if keys_pressed[pygame.K_1]:
             colliding_char_hitboxes = check_list_collision(get_hitboxes_from_list(other_hitboxes[:4]), non_permeable_hitboxes)
         else:
             colliding_char_hitboxes = []

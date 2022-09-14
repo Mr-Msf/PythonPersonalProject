@@ -35,3 +35,6 @@ class Door:
             self.asset.orig_hitbox.topleft = (1000000,1000000)
         else:
             self.asset.orig_hitbox.topleft = self.asset.orig_coords
+
+class Projectile:
+    pass
