@@ -37,4 +37,5 @@ class Door:
             self.asset.orig_hitbox.topleft = self.asset.orig_coords
 
 class Projectile:
-    pass
+    def __init__(self, asset, movement_per_frame, dmg_amount):
+        self.asset = asset

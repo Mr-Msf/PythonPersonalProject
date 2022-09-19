@@ -113,7 +113,7 @@ def handle_health_system(assets, other_hitboxes, char_health):
     hearts = int(char_health/200)
     for count in range(hearts):
         heart_spacing = count * 100 + 100
-        WINDOW.blit(assets[-2].image, (constants.WIDTH - heart_spacing, constants.HEIGHT - 100))
+        WINDOW.blit(assets[-3].image, (constants.WIDTH - heart_spacing, constants.HEIGHT - 100))
     return char_health
 
 def handle_collected_items(assets, items_collected):
@@ -185,7 +185,7 @@ def run_game(assets, other_hitboxes, clock):
         
         #message = sans_font.render("LOL", 1, constants.BLACK)
         #coords = other_functions.get_centered_coords(message, (constants.WIDTH_HALF, constants.HEIGHT_HALF))
-        if keys_pressed[pygame.K_1]:
+        if not keys_pressed[pygame.K_1]:
             colliding_char_hitboxes = check_list_collision(get_hitboxes_from_list(other_hitboxes[:4]), non_permeable_hitboxes)
         else:
             colliding_char_hitboxes = []
