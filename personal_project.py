@@ -61,9 +61,9 @@ def get_point_coords(map_offset, saved_time):
         return point_coords, saved_time
     return 0, saved_time
 
-def get_non_permeable_hitboxes(assets, hitboxes):
+def get_non_permeable_hitboxes(objects):
     non_permeable_hitboxes = []
-    for object in assets + hitboxes:
+    for object in objects:
         if not object.is_permeable:
             non_permeable_hitboxes.append(object.hitbox)
     return non_permeable_hitboxes
@@ -89,7 +89,7 @@ def handle_mechanisms(other_objects, detection_hitbox, keys_pressed):
         if keys_pressed[pygame.K_SPACE]:
             switch.flip(detection_hitbox, other_objects[1])
     for door in other_objects[1]:
-        door.update()
+        door.reverse()
 
 def get_touching_asset_index(other_objects, detection_hitbox):
     for index, switch in enumerate(other_objects[0]):
@@ -106,6 +106,8 @@ def take_damage(hitboxes, char_health):
             char_health -= hitbox.dmg_amount
     if char_health > 1000:
         char_health = 1000
+    elif char_health < 0:
+        char_health = 0
     return char_health
 
 def handle_health_system(assets, other_hitboxes, char_health):
@@ -123,15 +125,40 @@ def handle_collected_items(assets, items_collected):
         coords = collectable_new_coords[asset.name]
         asset.orig_hitbox.topleft = (coords)
 
-def modify_assets(assets, other_objects, other_hitboxes, items_collected, keys_pressed, saved_time):
+def open_collectable_doors(doors, items_collected):
+    major_collectable_num = minor_collectable_num = 0
+    for item_index in items_collected:
+        if item_index in constants.MAJOR_COLLECTABLE_ASSET_INDICES:
+            major_collectable_num += 1
+        if item_index in constants.MINOR_COLLECTABLE_ASSET_INDICES:
+            minor_collectable_num += 1
+    if major_collectable_num == 3:
+        doors[13].state = True
+    if minor_collectable_num == 10:
+        doors[59].state = True
+
+def handle_projectiles(projectiles, collidable_hitboxes, char_health):
+    for projectile in projectiles:
+        projectile.update_position()
+        if projectile.check_all_collision(collidable_hitboxes):
+            if projectile.asset.check_collision(collidable_hitboxes[-1]):
+                char_health -= projectile.dmg_amount
+            projectile.reset_position()
+
+    return char_health
+
+def modify_assets(assets, other_objects, other_hitboxes, items_collected, char_health, keys_pressed, saved_time):
     if saved_time + 0.5 < time.time():
         
         items_collected, saved_time = collect_items(assets, other_hitboxes[4].hitbox, items_collected, keys_pressed, saved_time)
     
         handle_collected_items(assets, items_collected)
+        char_health = handle_projectiles(other_objects[2], get_non_permeable_hitboxes(assets + other_hitboxes) + [other_hitboxes[5].hitbox], char_health)
 
         handle_mechanisms(other_objects, other_hitboxes[4].hitbox, keys_pressed)
-    return items_collected, saved_time
+    open_collectable_doors(other_objects[1], items_collected)
+    
+    return items_collected, char_health, saved_time
 
 def update_all_positions(assets, other_hitboxes, map_offset):
     WINDOW.fill(constants.BLACK)
@@ -160,54 +187,50 @@ def draw_game_gui(assets, other_hitboxes, char_health):
 
 def run_game(assets, other_hitboxes, clock):
     running = True
-    map_offset = [0,0]
-    char_direction = 0
+    map_offset = [0, -224]
+    char_direction = 180
     char_health = 1000
     saved_time = time.time()
     times_taken = []
-    #wall_hitbox_info = []
-    #saved_coords = 0
     object_coords = []
     wall_hitbox_list = []
     asset_list_indices = []
     other_objects = file_preparer.get_switches_and_doors(assets)
     saved_coords = 0
     items_collected = []
-    
-    #sans_font = pygame.font.SysFont("sans", 40)
+
 
     while running:
         time1 = time.time()
         clock.tick(constants.FPS)
 
         keys_pressed = check_keys()
-        non_permeable_hitboxes = get_non_permeable_hitboxes(assets, other_hitboxes)
-        
-        #message = sans_font.render("LOL", 1, constants.BLACK)
+        non_permeable_hitboxes = get_non_permeable_hitboxes(assets + other_hitboxes)
+       
         #coords = other_functions.get_centered_coords(message, (constants.WIDTH_HALF, constants.HEIGHT_HALF))
-        if not keys_pressed[pygame.K_1]:
+        if keys_pressed[pygame.K_1]:
             colliding_char_hitboxes = check_list_collision(get_hitboxes_from_list(other_hitboxes[:4]), non_permeable_hitboxes)
         else:
-            colliding_char_hitboxes = []
+            colliding_char_hitboxes = check_list_collision(get_hitboxes_from_list(other_hitboxes[:4]), non_permeable_hitboxes)
 
         map_offset, char_direction = alter_map_offset(map_offset, char_direction, colliding_char_hitboxes, keys_pressed)    
         
         assets[-1].rotate(char_direction)
 
-        items_collected, saved_time = modify_assets(assets, other_objects, other_hitboxes, items_collected, keys_pressed, saved_time)
+        items_collected, char_health, saved_time = modify_assets(assets, other_objects, other_hitboxes, items_collected, char_health, keys_pressed, saved_time)
 
         update_all_positions(assets, other_hitboxes, map_offset)
         
         char_health = draw_game_gui(assets, other_hitboxes, char_health)
 
-        #WINDOW.blit(message, coords)
-
         if keys_pressed[pygame.K_o]:
+            pass
             point_coords, saved_time = get_point_coords(map_offset, saved_time)
             if point_coords != 0:
                 object_coords.append(point_coords)
 
         if keys_pressed[pygame.K_i]:
+            pass
             touching_asset_index = get_touching_asset_index(other_objects, other_hitboxes[4].hitbox)
             if touching_asset_index != "lol" and saved_time + 0.3 < time.time():
                 asset_list_indices.append(touching_asset_index)
@@ -215,8 +238,9 @@ def run_game(assets, other_hitboxes, clock):
 
         if keys_pressed[pygame.K_ESCAPE]:    
             running = False
-        elif char_health <= 0:
-            running = False
+
+        if char_health <= 0:
+            map_offset = [0,0]
 
         pygame.display.update()
 

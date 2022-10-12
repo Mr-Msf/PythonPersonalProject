@@ -14,6 +14,7 @@ class Asset:
         self.hitbox = self.orig_hitbox.copy()
         self.detectable_hitbox = pygame.Rect(0,0,0,0)
         self.status_var = False
+        self.asset_offset = (0,0)
         self.update_image()
     
     def resize(self, scale_factor):
@@ -35,6 +36,7 @@ class Asset:
             screen_offset = map_offset
         else:
             screen_offset = (0,0)
+        screen_offset = (screen_offset[0]+self.asset_offset[0], screen_offset[1]+self.asset_offset[1])
         self.hitbox = other_functions.move_hitbox(self.orig_hitbox, screen_offset, self.centered_coords)
         self.hitbox.size = self.image.get_size()
         if not self.is_permeable:
@@ -44,6 +46,9 @@ class Asset:
         if self.hitbox.colliderect(other_hitbox):
             return True
         return False
+
+    def move(self, movement_amount):
+        self.asset_offset = (self.asset_offset[0]+movement_amount[0], self.asset_offset[1]+movement_amount[1])
 
     def blit(self, parent_surface):
         parent_surface.blit(self.image, self.hitbox)

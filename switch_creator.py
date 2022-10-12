@@ -30,12 +30,27 @@ class Door:
         self.asset = asset
         self.state = default_state
 
-    def update(self):
+    def reverse(self):
         if self.state:
             self.asset.orig_hitbox.topleft = (1000000,1000000)
         else:
             self.asset.orig_hitbox.topleft = self.asset.orig_coords
 
 class Projectile:
-    def __init__(self, asset, movement_per_frame, dmg_amount):
+    def __init__(self, asset, movement_per_frame, dmg_amount=500):
         self.asset = asset
+        self.movement_per_frame = movement_per_frame
+        self.dmg_amount = dmg_amount
+
+    def update_position(self):
+        self.asset.move(self.movement_per_frame)
+    
+    def reset_position(self):
+        self.asset.asset_offset = (0,0)
+
+    def check_all_collision(self, hitboxes):
+        colliding = False
+        for hitbox in hitboxes:
+            if self.asset.check_collision(hitbox):
+                colliding = True
+        return colliding
