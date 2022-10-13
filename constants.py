@@ -1,7 +1,7 @@
 import pygame
 import other_functions
 
-FPS = 60
+FPS = 120
 MAP_DIM_MULT = 28
 HUD_PERCENT = 0.2
 MOVE_SPEED = 15
@@ -23,7 +23,7 @@ WINDOW = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 WIDTH, HEIGHT = WINDOW.get_size()
 WIDTH_HALF, HEIGHT_HALF = int(WIDTH/2), int(HEIGHT/2)
 
-HUD_HEIGHT = int(HEIGHT*HUD_PERCENT)
+TEXT_POS = (int(-WIDTH_HALF/3),HEIGHT_HALF-65)
 
 ASSET_INFO = [
     # (asset_name, (orig_coords), is_movable, is_permeable, is_collectable, init_size_mult, init_rotation)
@@ -38,10 +38,10 @@ ASSET_INFO = [
     ("Collectable8", [(-3248, 3024)], [True, True, True], 5),
     ("Collectable9", [(-2464, -1120)], [True, True, True], 5),
     ("Collectable10", [(896, 2940)], [True, True, True], 5),
-    ("Collectable11", [(2800, 2940)], [True, True, True], 5),
     ("Sword", [(-2016, -1120)], [True, True, True], 5, 180),
     ("Chains", [(3024, 2576)], [True, True, True], 5),
     ("Crown", [(0, 2296)], [True, True, True], 5),
+    ("Collectable11", [(2800, 2940)], [True, True, True], 5),
     ("Switch1", [(-2128, 1568), (1344, -672), (896, 3136), (-896, 3136), (-1232, 3136), (-1568, 3136), (-3024, -1456)], [True, True, False], 7),
     ("Switch1", [(-1568, -1120), (-1568, -280), (-1344, 560), (1680, 1456), (2912, 896)], [True, True, False], 7, 90),
     ("Switch1", [(-3024, -784), (-3248, 224), (-2800, 224), (1344, -1344)], [True, True, False], 7, 180),
@@ -52,7 +52,8 @@ ASSET_INFO = [
     ("Door2", [(2016, -1232), (2240, -1456), (2464, -1232), (2016, -1008), (2240, -1008), (2464, -784), (2688, -784)], [True, False, False], 28),
     ("Door2", [(1904, -1120), (2128, -896), (2800, -1120), (2576, -1344), (2352, -1344), (1932, -140), (2436, -140)], [True, False, False], 28, 90),
     ("Projectile1", [(-3332, 560), (-3332, -112), (-3332, -336), (-2716, -336), (-2716, -112), (-2716, 784), (-3248, -588), (-2800, -1652), (-2464, -756), (1652, 1680), (-3248, 3108), (-3332, 3024), (1848, 196), (2016, 196), (2184, 196), (2352, 196), (2520, 196), (1848, -196), (2016, -196), (2184, -196), (2352, -196), (2520, -196)], [True, True, False], 7),
-    ("Word1", [(100000,0)], [False, True, False], 5),
+    ("Word1", [TEXT_POS], [False, True, False], 5),
+    ("Word2", [TEXT_POS], [False, True, False], 5),
     ("Heart", [(10000,10000)], [False, True, False], 5),
     ("Crosshair", [(0,1000000)], [False, True, False], 5),
     ("Character", [(0,0)], [False, True, False], 7)
@@ -285,54 +286,56 @@ STARTING_DOOR_STATES = [
 ]
 
 PROJECTILE_INFO = [
-    [(15,0)],
-    [(15, -5)],
-    [(15, 5)],
-    [(-15, 0)],
-    [(-15, 0)],
-    [(-15, 0)],
-    [(0, -15)],
-    [(0, 15)],
-    [(0, 15)],
-    [(-10, 0), 2000],
-    [(0, -15), 2000],
-    [(15, 0), 2000],
-    [(0, -15)],
-    [(0, -10)],
-    [(0, -5)],
-    [(0, -10)],
-    [(0, -15)],
-    [(5, 15)],
-    [(-3, 9)],
-    [(0, 0)],
-    [(3, 9)],
-    [(-5, 15)],
+    [(12,0)],
+    [(12, -5)],
+    [(12, 5)],
+    [(-12, 0)],
+    [(-10, 0)],
+    [(-10, 0)],
+    [(0, -12)],
+    [(0, 12)],
+    [(0, 12)],
+    [(-9, 0), 2000],
+    [(0, -14), 2000],
+    [(14, 0), 2000],
+    [(0, -12),350],
+    [(0, -10),350],
+    [(0, -3),200],
+    [(0, -10),350],
+    [(0, -12),350],
+    [(5, 12)],
+    [(-3, 8)],
+    [(0, 3),200],
+    [(3, 8)],
+    [(-5, 12)],
 ]
 
 MESSAGES = [
     ""
 ]
 
-COLLECTABLE_NEW_COORDS = {
-    "Sword" : (-504, -504), 
-    "Chains" : (504, -504), 
-    "Crown" : (0, -308),
-    "Collectable1" : (-196, 3220),
-    "Collectable2" : (196, 3220),
-    "Collectable3" : (-196, 3360),
-    "Collectable4" : (196, 3360),
-    "Collectable5" : (-336, 3220),
-    "Collectable6" : (336, 3220),
-    "Collectable7" : (-336, 3360),
-    "Collectable8" : (336, 3360),
-    "Collectable9" : (-476, 3220),
-    "Collectable10" : (476, 3220),
-    #"Collectable11" :
+COLLECTABLE_INFO = {
+    "Sword" : [(-504, -504), 3], 
+    "Chains" : [(504, -504), 4], 
+    "Crown" : [(0, -308), 5],
+    "Collectable1" : [(-196, 3220), 2],
+    "Collectable2" : [(196, 3220), 2],
+    "Collectable3" : [(-196, 3360), 2],
+    "Collectable4" : [(196, 3360), 2],
+    "Collectable5" : [(-336, 3220), 2],
+    "Collectable6" : [(336, 3220), 2],
+    "Collectable7" : [(-336, 3360), 2],
+    "Collectable8" : [(336, 3360), 2],
+    "Collectable9" : [(-476, 3220), 2],
+    "Collectable10" : [(476, 3220), 2],
+    "Collectable11" : [(10, 10), 6]
 }
 
 MAJOR_COLLECTABLE_ASSET_INDICES = list(range(11,14))
 
 MINOR_COLLECTABLE_ASSET_INDICES = list(range(1,11))
+
+OMEGA_COLLECTABLE_ASSET_INDICES = list(range(15))
 
 KEY_COMBOS = {
     (pygame.K_UP, pygame.K_UP) : (0, 0, CHAR_SPEED),

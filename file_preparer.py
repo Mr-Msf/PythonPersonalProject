@@ -48,8 +48,8 @@ def get_hitboxes(all_hitbox_info):
     return hitboxes
 
 def get_switches_and_doors(assets):
-    switch_assets, door_assets, projectile_assets = [], [], []
-    switches, doors, projectiles = [], [], []
+    switch_assets, door_assets, projectile_assets, word_assets = [], [], [], []
+    switches, doors, projectiles, words = [], [], [], []
     for asset in assets:
         if "Switch" in asset.name:
             switch_assets.append(asset)
@@ -61,7 +61,8 @@ def get_switches_and_doors(assets):
         switches.append(switch_creator.Switch(switch_asset, door_indices))
     for door_asset, door_state in zip(door_assets, constants.STARTING_DOOR_STATES):
         doors.append(switch_creator.Door(door_asset, door_state))
-    for projectile_asset, projecile_info in zip(projectile_assets, constants.PROJECTILE_INFO):
-        projectiles.append(switch_creator.Projectile(projectile_asset, *projecile_info))
+    for word_asset, word_info in zip(word_assets, constants.WORD_INFO):
+        words.append(switch_creator.Word(word_asset, *word_info))
+
         
-    return switches, doors, projectiles
+    return switches, doors, projectiles, words

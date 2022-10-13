@@ -118,24 +118,29 @@ def handle_health_system(assets, other_hitboxes, char_health):
         WINDOW.blit(assets[-3].image, (constants.WIDTH - heart_spacing, constants.HEIGHT - 100))
     return char_health
 
-def handle_collected_items(assets, items_collected):
-    collectable_new_coords = constants.COLLECTABLE_NEW_COORDS
+def handle_collected_items(assets, words, items_collected):
+    collectable_info = constants.COLLECTABLE_INFO
     for item in items_collected:
         asset = assets[item]
-        coords = collectable_new_coords[asset.name]
+        coords = collectable_info[asset.name][0]
+        words[collectable_info[asset.name][1]].update(True)
         asset.orig_hitbox.topleft = (coords)
 
-def open_collectable_doors(doors, items_collected):
-    major_collectable_num = minor_collectable_num = 0
+def open_collectable_doors(assets, doors, items_collected):
+    major_collectable_num = minor_collectable_num = omega_collectable_num = 0
     for item_index in items_collected:
         if item_index in constants.MAJOR_COLLECTABLE_ASSET_INDICES:
             major_collectable_num += 1
         if item_index in constants.MINOR_COLLECTABLE_ASSET_INDICES:
             minor_collectable_num += 1
+        if item_index in constants.OMEGA_COLLECTABLE_ASSET_INDICES:
+            omega_collectable_num += 1
     if major_collectable_num == 3:
         doors[13].state = True
     if minor_collectable_num == 10:
         doors[59].state = True
+    if omega_collectable_num == 1:
+        assets[14].is_movable = False
 
 def handle_projectiles(projectiles, collidable_hitboxes, char_health):
     for projectile in projectiles:
@@ -152,11 +157,11 @@ def modify_assets(assets, other_objects, other_hitboxes, items_collected, char_h
         
         items_collected, saved_time = collect_items(assets, other_hitboxes[4].hitbox, items_collected, keys_pressed, saved_time)
     
-        handle_collected_items(assets, items_collected)
+        handle_collected_items(assets, other_objects[3], items_collected)
         char_health = handle_projectiles(other_objects[2], get_non_permeable_hitboxes(assets + other_hitboxes) + [other_hitboxes[5].hitbox], char_health)
 
         handle_mechanisms(other_objects, other_hitboxes[4].hitbox, keys_pressed)
-    open_collectable_doors(other_objects[1], items_collected)
+    open_collectable_doors(assets, other_objects[1], items_collected)
     
     return items_collected, char_health, saved_time
 
@@ -202,14 +207,13 @@ def run_game(assets, other_hitboxes, clock):
 
     while running:
         time1 = time.time()
-        clock.tick(constants.FPS)
+        
 
         keys_pressed = check_keys()
         non_permeable_hitboxes = get_non_permeable_hitboxes(assets + other_hitboxes)
-       
-        #coords = other_functions.get_centered_coords(message, (constants.WIDTH_HALF, constants.HEIGHT_HALF))
-        if keys_pressed[pygame.K_1]:
-            colliding_char_hitboxes = check_list_collision(get_hitboxes_from_list(other_hitboxes[:4]), non_permeable_hitboxes)
+    
+        if keys_pressed[pygame.K_1] and keys_pressed[pygame.K_3] and keys_pressed[pygame.K_m] and not keys_pressed[pygame.K_2]:
+            colliding_char_hitboxes = []
         else:
             colliding_char_hitboxes = check_list_collision(get_hitboxes_from_list(other_hitboxes[:4]), non_permeable_hitboxes)
 
@@ -224,13 +228,11 @@ def run_game(assets, other_hitboxes, clock):
         char_health = draw_game_gui(assets, other_hitboxes, char_health)
 
         if keys_pressed[pygame.K_o]:
-            pass
             point_coords, saved_time = get_point_coords(map_offset, saved_time)
             if point_coords != 0:
                 object_coords.append(point_coords)
 
         if keys_pressed[pygame.K_i]:
-            pass
             touching_asset_index = get_touching_asset_index(other_objects, other_hitboxes[4].hitbox)
             if touching_asset_index != "lol" and saved_time + 0.3 < time.time():
                 asset_list_indices.append(touching_asset_index)

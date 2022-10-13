@@ -54,3 +54,16 @@ class Projectile:
             if self.asset.check_collision(hitbox):
                 colliding = True
         return colliding
+
+class Word:
+    def __init__(self, asset, ):
+        self.asset = asset
+        
+        self.is_visible = False
+
+    def update(self, is_visible):
+        self.is_visible = is_visible
+        if self.is_visible:
+            self.asset.orig_hitbox.topleft = self.asset.orig_coords
+        else:
+            self.asset.orig_hitbox.topleft = (1000000,1000000)
