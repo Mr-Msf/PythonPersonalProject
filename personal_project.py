@@ -123,11 +123,13 @@ def handle_collected_items(assets, words, items_collected):
     for item in items_collected:
         asset = assets[item]
         coords = collectable_info[asset.name][0]
-        words[collectable_info[asset.name][1]].update(True)
+        words[collectable_info[asset.name][1]].is_visible = True
         asset.orig_hitbox.topleft = (coords)
 
 def open_collectable_doors(assets, doors, items_collected):
-    major_collectable_num = minor_collectable_num = omega_collectable_num = 0
+    major_collectable_num = 0
+    minor_collectable_num = 0
+    omega_collectable_num = 0
     for item_index in items_collected:
         if item_index in constants.MAJOR_COLLECTABLE_ASSET_INDICES:
             major_collectable_num += 1
@@ -139,28 +141,32 @@ def open_collectable_doors(assets, doors, items_collected):
         doors[13].state = True
     if minor_collectable_num == 10:
         doors[59].state = True
+        doors[39].state = True
     if omega_collectable_num == 1:
         assets[14].is_movable = False
 
 def handle_projectiles(projectiles, collidable_hitboxes, char_health):
+
     for projectile in projectiles:
         projectile.update_position()
+
         if projectile.check_all_collision(collidable_hitboxes):
+
             if projectile.asset.check_collision(collidable_hitboxes[-1]):
                 char_health -= projectile.dmg_amount
             projectile.reset_position()
-
     return char_health
 
 def modify_assets(assets, other_objects, other_hitboxes, items_collected, char_health, keys_pressed, saved_time):
     if saved_time + 0.5 < time.time():
-        
         items_collected, saved_time = collect_items(assets, other_hitboxes[4].hitbox, items_collected, keys_pressed, saved_time)
-    
+
         handle_collected_items(assets, other_objects[3], items_collected)
+
         char_health = handle_projectiles(other_objects[2], get_non_permeable_hitboxes(assets + other_hitboxes) + [other_hitboxes[5].hitbox], char_health)
 
         handle_mechanisms(other_objects, other_hitboxes[4].hitbox, keys_pressed)
+
     open_collectable_doors(assets, other_objects[1], items_collected)
     
     return items_collected, char_health, saved_time
@@ -204,11 +210,9 @@ def run_game(assets, other_hitboxes, clock):
     saved_coords = 0
     items_collected = []
 
-
     while running:
         time1 = time.time()
         
-
         keys_pressed = check_keys()
         non_permeable_hitboxes = get_non_permeable_hitboxes(assets + other_hitboxes)
     
@@ -216,10 +220,14 @@ def run_game(assets, other_hitboxes, clock):
             colliding_char_hitboxes = []
         else:
             colliding_char_hitboxes = check_list_collision(get_hitboxes_from_list(other_hitboxes[:4]), non_permeable_hitboxes)
-
+        
         map_offset, char_direction = alter_map_offset(map_offset, char_direction, colliding_char_hitboxes, keys_pressed)    
         
         assets[-1].rotate(char_direction)
+
+        for word in other_objects[3]:
+            word.check_collision(other_hitboxes[4].hitbox)
+            word.update(map_offset)
 
         items_collected, char_health, saved_time = modify_assets(assets, other_objects, other_hitboxes, items_collected, char_health, keys_pressed, saved_time)
 
@@ -227,10 +235,10 @@ def run_game(assets, other_hitboxes, clock):
         
         char_health = draw_game_gui(assets, other_hitboxes, char_health)
 
-        if keys_pressed[pygame.K_o]:
-            point_coords, saved_time = get_point_coords(map_offset, saved_time)
-            if point_coords != 0:
-                object_coords.append(point_coords)
+        #if keys_pressed[pygame.K_o]:
+        #    point_coords, saved_time = get_point_coords(map_offset, saved_time)
+        #    if point_coords != 0:
+        #        object_coords.append(point_coords)
 
         if keys_pressed[pygame.K_i]:
             touching_asset_index = get_touching_asset_index(other_objects, other_hitboxes[4].hitbox)
@@ -249,7 +257,7 @@ def run_game(assets, other_hitboxes, clock):
         wall_hitbox, saved_coords, saved_time = get_wall_hitbox(map_offset, saved_coords, saved_time, keys_pressed)
         
         if wall_hitbox != 0:
-           wall_hitbox_list.append(wall_hitbox)
+            wall_hitbox_list.append(wall_hitbox)
         
         time2 = time.time()
         times_taken.append(time2 - time1)

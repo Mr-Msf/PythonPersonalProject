@@ -2,4 +2,4 @@
 
 My IB MYP personal project, which I am coding in Python.
 
-Current Version: 0.5.1
+Current Version: 1.0.0

@@ -54,6 +54,11 @@ ASSET_INFO = [
     ("Projectile1", [(-3332, 560), (-3332, -112), (-3332, -336), (-2716, -336), (-2716, -112), (-2716, 784), (-3248, -588), (-2800, -1652), (-2464, -756), (1652, 1680), (-3248, 3108), (-3332, 3024), (1848, 196), (2016, 196), (2184, 196), (2352, 196), (2520, 196), (1848, -196), (2016, -196), (2184, -196), (2352, -196), (2520, -196)], [True, True, False], 7),
     ("Word1", [TEXT_POS], [False, True, False], 5),
     ("Word2", [TEXT_POS], [False, True, False], 5),
+    ("Word3", [TEXT_POS], [False, True, False], 5),
+    ("Word4", [TEXT_POS], [False, True, False], 5),
+    ("Word5", [TEXT_POS], [False, True, False], 5),
+    ("Word6", [TEXT_POS], [False, True, False], 5),
+    ("Word7", [TEXT_POS], [False, True, False], 5),
     ("Heart", [(10000,10000)], [False, True, False], 5),
     ("Crosshair", [(0,1000000)], [False, True, False], 5),
     ("Character", [(0,0)], [False, True, False], 7)
@@ -310,10 +315,6 @@ PROJECTILE_INFO = [
     [(-5, 12)],
 ]
 
-MESSAGES = [
-    ""
-]
-
 COLLECTABLE_INFO = {
     "Sword" : [(-504, -504), 3], 
     "Chains" : [(504, -504), 4], 
@@ -328,14 +329,45 @@ COLLECTABLE_INFO = {
     "Collectable8" : [(336, 3360), 2],
     "Collectable9" : [(-476, 3220), 2],
     "Collectable10" : [(476, 3220), 2],
-    "Collectable11" : [(10, 10), 6]
+    "Collectable11" : [(WIDTH_HALF - 575, HEIGHT_HALF - 65), 6]
 }
+
+WORD_INFO = [
+    [pygame.Rect(0, 0, 1000, 1000)],
+    [pygame.Rect(-1792+WIDTH_HALF, 280+HEIGHT_HALF, 490, 406)],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+]
 
 MAJOR_COLLECTABLE_ASSET_INDICES = list(range(11,14))
 
 MINOR_COLLECTABLE_ASSET_INDICES = list(range(1,11))
 
-OMEGA_COLLECTABLE_ASSET_INDICES = list(range(15))
+OMEGA_COLLECTABLE_ASSET_INDICES = [15]
 
 KEY_COMBOS = {
     (pygame.K_UP, pygame.K_UP) : (0, 0, CHAR_SPEED),

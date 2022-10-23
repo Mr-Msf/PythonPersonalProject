@@ -1,4 +1,4 @@
-import time
+import pygame, time, asset_creator
 
 class Switch():
     def __init__(self, asset, connected_door_asset_indices):
@@ -56,14 +56,28 @@ class Projectile:
         return colliding
 
 class Word:
-    def __init__(self, asset, ):
+    def __init__(self, asset, trigger_rect=pygame.Rect(0,0,0,0)):
         self.asset = asset
-        
+        self.map_offset = [0,0]
+        self.trigger_rect = asset_creator.Hitbox(trigger_rect, True)
         self.is_visible = False
+        self.saved_time = time.time()
+        self.permanently_non_visible = False
+        self.update(self.map_offset)
 
-    def update(self, is_visible):
-        self.is_visible = is_visible
-        if self.is_visible:
+    def update(self, map_offset):    
+        if self.is_visible and self.permanently_non_visible == False:
             self.asset.orig_hitbox.topleft = self.asset.orig_coords
         else:
+            self.saved_time = time.time()
             self.asset.orig_hitbox.topleft = (1000000,1000000)
+        
+        if time.time() - self.saved_time >= 6:
+            
+            self.permanently_non_visible = True
+        self.trigger_rect.update_position(map_offset)
+
+    def check_collision(self, detection_hitbox):
+        if self.trigger_rect.orig_hitbox != pygame.Rect(0,0,0,0):
+            if self.trigger_rect.check_collision(detection_hitbox):
+                self.is_visible = True

@@ -57,12 +57,15 @@ def get_switches_and_doors(assets):
             door_assets.append(asset)
         elif "Projectile" in asset.name:
             projectile_assets.append(asset)
+        elif "Word" in asset.name:
+            word_assets.append(asset)
     for switch_asset, door_indices in zip(switch_assets, constants.DOORS_PER_SWITCH):
         switches.append(switch_creator.Switch(switch_asset, door_indices))
     for door_asset, door_state in zip(door_assets, constants.STARTING_DOOR_STATES):
         doors.append(switch_creator.Door(door_asset, door_state))
+    for projectile_asset, projectile_info in zip(projectile_assets, constants.PROJECTILE_INFO):
+        projectiles.append(switch_creator.Projectile(projectile_asset, *projectile_info))
     for word_asset, word_info in zip(word_assets, constants.WORD_INFO):
         words.append(switch_creator.Word(word_asset, *word_info))
 
-        
     return switches, doors, projectiles, words
